@@ -1,0 +1,147 @@
+{
+  "info": {
+    "name": "Admin City & Salons APIs",
+    "_postman_id": "f1c9a4c2-1234-5678-9101-abcdef123456",
+    "description": "APIs for managing cities and salons in admin panel",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Cities",
+      "item": [
+        {
+          "name": "Get All Cities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/city", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","city"] }
+          }
+        },
+        {
+          "name": "Add City",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmedabad\",\n  \"state\": \"Gujarat\",\n  \"country\": \"India\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/api/admin/city", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","city"] }
+          }
+        },
+        {
+          "name": "Deactivate City",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/city/deactivate/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","city","deactivate","1"] }
+          }
+        },
+        {
+          "name": "Activate City",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/city/activate/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","city","activate","1"] }
+          }
+        },
+        {
+          "name": "Delete City",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/city/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","city","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Salons",
+      "item": [
+        {
+          "name": "Get All Salons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/salons", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","salons"] }
+          }
+        },
+        {
+          "name": "Add Salon",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Glamour Beauty Salon\",\n  \"email\": \"glamour@example.com\",\n  \"address\": \"123 Main Street, Ahmedabad\",\n  \"phone\": \"+91 9876543210\",\n  \"owner_name\": \"Neha Sharma\",\n  \"services\": [\"Haircut\", \"Facial\", \"Manicure\", \"Pedicure\"],\n  \"rating\": 4.5,\n  \"city_id\": 1,\n  \"images\": [\"https://example.com/images/salon1.jpg\",\"https://example.com/images/salon2.jpg\"]\n}"
+            },
+            "url": { "raw": "http://localhost:3000/api/admin/salons", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","salons"] }
+          }
+        },
+        {
+          "name": "Update Salon",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Salon Name\"\n}"
+            },
+            "url": { "raw": "http://localhost:3000/api/admin/salons/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","salons","1"] }
+          }
+        },
+        {
+          "name": "Delete Salon",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/salons/1", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","salons","1"] }
+          }
+        },
+        {
+          "name": "Toggle Salon Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": { "raw": "http://localhost:3000/api/admin/salons/1/status", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","salons","1","status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Single Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "salonName", "value": "Glamour Beauty Salon", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "http://localhost:3000/api/admin/upload/single", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","upload","single"] }
+          }
+        },
+        {
+          "name": "Upload Multiple Images",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "salonName", "value": "Elegance Spa", "type": "text" },
+                { "key": "images", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "http://localhost:3000/api/admin/upload/multiple", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["api","admin","upload","multiple"] }
+          }
+        }
+      ]
+    }
+  ]
+}
