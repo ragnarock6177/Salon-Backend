@@ -24,7 +24,7 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:4200')
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:4200' || "https://ragna-salon-app.vercel.app")
   .split(',')
   .map(s => s.trim());
 
