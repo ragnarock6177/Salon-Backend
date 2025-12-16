@@ -9,6 +9,17 @@ dotenv.config();
 const config = process.env.NODE_ENV === 'production' ? production : development;
 const db = knex(config);
 
+db.on('query', q => {
+    q.__startTime = Date.now();
+});
+
+db.on('query-response', (response, q) => {
+    console.log(
+        `⏱️ Query Time: ${Date.now() - q.__startTime} ms`,
+        q.sql
+    );
+});
+
 // async function testConnection() {
 //   db.client.pool.on('error', (err) => {
 //     console.error('Knex pool error:', err);

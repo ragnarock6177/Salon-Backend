@@ -83,10 +83,26 @@ class SalonsService {
                 .select('salons.*')
                 .leftJoin('cities', 'salons.city_id', 'cities.id');
 
+            if (!salons.length) return [];
+
+            const salonIds = salons.map(s => s.id);
+
+            const images = await db('salon_images')
+                .whereIn('salon_id', salonIds)
+                .select('salon_id', 'image_url');
+
+            // Map images to salons
+            const imageMap = {};
+            for (const img of images) {
+                if (!imageMap[img.salon_id]) {
+                    imageMap[img.salon_id] = [];
+                }
+                imageMap[img.salon_id].push(img.image_url);
+            }
+
             // Attach images
             for (const salon of salons) {
-                const images = await db('salon_images').where({ salon_id: salon.id }).select('image_url');
-                salon.images = images.map((img) => img.image_url);
+                salon.images = imageMap[salon.id] || [];
             }
 
             return salons;
@@ -124,8 +140,8 @@ class SalonsService {
             await db('salon_images').insert({
                 salon_id: salon_id,
                 image_url: imagePath,
-                is_primary:0,
-                type:'gallery'
+                is_primary: 0,
+                type: 'gallery'
             })
         } catch (error) {
             console.error('Toggle Salon Status Error:', err.message);
