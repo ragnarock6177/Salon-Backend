@@ -20,22 +20,21 @@ db.on('query-response', (response, q) => {
     );
 });
 
-// async function testConnection() {
-//   db.client.pool.on('error', (err) => {
-//     console.error('Knex pool error:', err);
-//   });
+async function testConnection() {
+  db.client.pool.on('error', (err) => {
+    console.error('Knex pool error:', err);
+  });
 
-//   try {
-//     const result = await db.raw("SELECT NOW() as now");
-//     console.log("✅ DB Connected! Current time:", result[0][0].now);
-//   } catch (err) {
-//     console.error("❌ DB Connection failed:", err.message);
-//   } finally {
-//     await db.destroy();
-//   }
-// }
+  try {
+    const result = await db.raw("SELECT NOW() as now");
+  } catch (err) {
+    console.error("❌ DB Connection failed:", err.message);
+  } finally {
+    // await db.destroy();
+  }
+}
 
-// testConnection();
+testConnection();
 
 export default db;
 // npx knex --knexfile ./knexfile.cjs --env development migrate:make create_cities_table
