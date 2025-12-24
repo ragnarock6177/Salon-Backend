@@ -56,6 +56,15 @@ const UserController = {
     } catch (error) {
       return sendError(res, error.message, error.statusCode || 404);
     }
+  },
+
+  async listUsers(req, res) {
+    try {
+      const users = await UserService.getAllUsers();
+      return sendSuccess(res, 'Users fetched successfully', users, 200);
+    } catch (error) {
+      return sendError(res, error.message, error.statusCode || 500);
+    }
   }
 };
 

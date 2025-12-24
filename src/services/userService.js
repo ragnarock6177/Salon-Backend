@@ -64,6 +64,16 @@ class UserService {
       throw new Error(error.message);
     }
   }
+
+  static async getAllUsers() {
+    try {
+      const users = await db('users').select('id', 'name', 'email');
+      return users;
+    } catch (err) {
+      console.error('Get All Users Error:', err.message);
+      throw new Error('Failed to fetch users');
+    }
+  }
 }
 
 export default UserService;
