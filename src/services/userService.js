@@ -42,7 +42,7 @@ class UserService {
 
   static async getProfile(userId) {
     try {
-      const user = await db('users').where({ id: userId }).select('id', 'name', 'email').first();
+      const user = await db('users').where({ id: userId }).select('id', 'name', 'email', 'phone').first();
       if (!user) {
         throw new Error('User not found');
       }
@@ -53,14 +53,54 @@ class UserService {
     }
   }
 
-  static async verifyToken(token) {
+  /**
+   * Verify Firebase ID token and handle phone-based authentication
+   * Creates a new user if phone number doesn't exist, otherwise returns existing user
+   * @param {string} token - Firebase ID token
+   * @returns {Object} JWT token and user data
+   */
+  static async verifyPhoneToken(token) {
     try {
+      // Verify the Firebase ID token
       const decodedToken = await admin.auth().verifyIdToken(token);
-      const { phone_number } = decodedToken;
-      const jwt_token = sign({ phone_number }, JWT_SECRET, { expiresIn: '1h' });
-      return { jwt_token, user: decodedToken };
+      const { phone_number, uid: firebaseUid } = decodedToken;
+
+      if (!phone_number) {
+        throw new Error('Phone number not found in token');
+      }
+
+      // Check if user exists with this phone number
+      let user = await db('users').where({ phone: phone_number }).first();
+      let isNewUser = false;
+
+      if (!user) {
+        // Create new user with phone number
+        const [id] = await db('users').insert({
+          phone: phone_number,
+          firebase_uid: firebaseUid,
+          auth_provider: 'phone',
+          created_at: new Date(),
+          updated_at: new Date()
+        });
+        user = await db('users').where({ id }).first();
+        isNewUser = true;
+      }
+
+      // Generate JWT token with user ID
+      const jwt_token = sign({ id: user.id, phone: user.phone }, JWT_SECRET, { expiresIn: '24h' });
+
+      return {
+        jwt_token,
+        user: {
+          id: user.id,
+          name: user.name || null,
+          phone: user.phone,
+          email: user.email || null,
+          isNewUser
+        }
+      };
     } catch (error) {
-      console.error('Verify Token Error:', error.message);
+      console.error('Verify Phone Token Error:', error.message);
       throw new Error(error.message);
     }
   }
