@@ -124,6 +124,29 @@ class SalonsService {
         }
     }
 
+    // ✅ Bulk delete salons
+    static async bulkDeleteSalons(salonIds) {
+        try {
+            if (!salonIds || !salonIds.length) {
+                throw new Error('No salon IDs provided');
+            }
+
+            // Delete associated images first
+            await db('salon_images').whereIn('salon_id', salonIds).del();
+
+            // Delete salons
+            const deletedCount = await db('salons').whereIn('id', salonIds).del();
+
+            return {
+                message: `${deletedCount} salon(s) deleted successfully`,
+                deletedCount
+            };
+        } catch (err) {
+            console.error('Bulk Delete Salons Error:', err.message);
+            throw new Error('Failed to delete salons');
+        }
+    }
+
     // ✅ Activate/Deactivate salon
     static async toggleSalonStatus(salonId, isActive) {
         try {

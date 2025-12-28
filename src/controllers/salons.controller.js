@@ -49,6 +49,20 @@ const SalonsController = {
     }
   },
 
+  // ✅ Bulk delete salons
+  async bulkDeleteSalons(req, res) {
+    try {
+      const { ids } = req.body; // expecting { ids: [1, 2, 3] }
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return sendError(res, 'Please provide an array of salon IDs', 400);
+      }
+      const result = await SalonsService.bulkDeleteSalons(ids);
+      return sendSuccess(res, result.message, { deletedCount: result.deletedCount }, 200);
+    } catch (error) {
+      return sendError(res, error.message, 400);
+    }
+  },
+
   // ✅ Toggle active/inactive
   async toggleSalonStatus(req, res) {
     try {
