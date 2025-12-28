@@ -12,6 +12,17 @@ const CityController = {
         }
     },
 
+    // ✅ Update city
+    async updateCity(req, res) {
+        try {
+            const { id } = req.params;
+            const city = await CityService.updateCity(id, req.body);
+            return sendSuccess(res, 'City updated successfully', city, 200);
+        } catch (error) {
+            return sendError(res, error.message, error.statusCode || 400);
+        }
+    },
+
     // ✅ Add Bulk city
     async addBulkCities(req, res) {
         try {

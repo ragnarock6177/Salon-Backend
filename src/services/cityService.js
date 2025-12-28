@@ -21,6 +21,35 @@ class CityService {
         }
     }
 
+    // ✅ Update city
+    static async updateCity(id, { name }) {
+        try {
+            if (!name) throw new Error('City name is required');
+
+            const city = await db('cities').where({ id }).first();
+            if (!city) throw new Error('City not found');
+
+            // Check if another city with same name exists
+            const existingCity = await db('cities')
+                .where({ name })
+                .whereNot({ id })
+                .first();
+
+            if (existingCity) throw new Error('City with this name already exists');
+
+            await db('cities').where({ id }).update({
+                name,
+                updated_at: new Date()
+            });
+
+            const updatedCity = await db('cities').where({ id }).first();
+            return updatedCity;
+        } catch (err) {
+            console.error('Update City Error:', err.message);
+            throw new Error(err.message);
+        }
+    }
+
     // ✅ Deactivate city
     static async deactiveCity(id) {
         try {
