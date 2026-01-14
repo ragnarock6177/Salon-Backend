@@ -1,4 +1,5 @@
 import db from '../config/db.js';
+import { CouponService } from './couponService.js';
 
 class SalonsService {
     // ✅ Add new salon
@@ -109,6 +110,30 @@ class SalonsService {
         } catch (err) {
             console.error('Get Salons Error:', err.message);
             throw new Error('Failed to fetch salons');
+        }
+    }
+
+    // ✅ Get salon by ID with images and coupons
+    static async getSalonById(salonId) {
+        try {
+            const salon = await db('salons').where({ id: salonId }).first();
+            if (!salon) return null;
+
+            // Fetch images
+            const images = await db('salon_images')
+                .where({ salon_id: salonId })
+                .select('image_url', 'is_primary', 'type');
+
+            salon.images = images;
+
+            // Fetch coupons
+            const coupons = await CouponService.getCouponsBySalon(salonId);
+            salon.coupons = coupons;
+
+            return salon;
+        } catch (err) {
+            console.error('Get Salon By ID Error:', err.message);
+            throw new Error('Failed to fetch salon details');
         }
     }
 

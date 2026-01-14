@@ -6,6 +6,7 @@ const router = express.Router();
 router.post('/', SalonsController.addSalon);
 router.put('/:id', SalonsController.updateSalon);
 router.get('/', SalonsController.getSalons);
+router.get('/:id', SalonsController.getSalonById);
 router.delete('/:id', SalonsController.deleteSalon);
 router.post('/bulk-delete', SalonsController.bulkDeleteSalons);
 router.patch('/:id/status', SalonsController.toggleSalonStatus);

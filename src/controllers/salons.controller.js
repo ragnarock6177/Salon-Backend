@@ -38,6 +38,22 @@ const SalonsController = {
     }
   },
 
+  // ✅ Get salon by ID
+  async getSalonById(req, res) {
+    try {
+      const salonId = req.params.id;
+      const salon = await SalonsService.getSalonById(salonId);
+
+      if (!salon) {
+        return sendError(res, 'Salon not found', 404);
+      }
+
+      return sendSuccess(res, 'Salon fetched successfully', salon, 200);
+    } catch (error) {
+      return sendError(res, error.message, 400);
+    }
+  },
+
   // ✅ Delete salon
   async deleteSalon(req, res) {
     try {

@@ -47,7 +47,7 @@ app.use(cors({
 // }));
 
 // --- Performance middlewares ------------------------------------------------
-app.use(compression()); 
+app.use(compression());
 
 const apiLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
@@ -63,7 +63,7 @@ app.use(cookieParser());
 
 app.use((req, res, next) => {
   const start = Date.now();
-  res.setHeader('X-Request-Id', req.headers['x-request-id'] || `${Date.now()}-${Math.random().toString(36).slice(2,8)}`);
+  res.setHeader('X-Request-Id', req.headers['x-request-id'] || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   res.once('finish', () => {
     const delta = Date.now() - start;
     // minimal console tracing; replace with structured logger later
@@ -80,7 +80,7 @@ app.use('/api/admin/salons', salonsRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/admin/upload", express.static("uploads"), uploadRoutes);
 
-app.use("/api/coupons", couponRoutes);
+app.use("/api/admin/coupons", couponRoutes);
 app.use("/api/memberships", salonMembershipsRoutes);
 app.use("/api/customer-memberships", authMiddleware, customerMembershipRoutes);
 
