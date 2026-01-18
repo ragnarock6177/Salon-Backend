@@ -214,7 +214,11 @@ class SalonsService {
             });
 
             // Return Data URI
-            const qrCodeUrl = await QRCode.toDataURL(qrData);
+            const qrCodeUrl = await QRCode.toDataURL(qrData, {
+                width: 300,          // size of QR
+                margin: 2,           // white border
+                errorCorrectionLevel: 'H'
+            });
             return qrCodeUrl;
         } catch (err) {
             console.error('Generate QR Code Error:', err.message);
