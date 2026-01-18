@@ -1,5 +1,6 @@
 import db from '../config/db.js';
 import { CouponService } from './couponService.js';
+import QRCode from 'qrcode';
 
 class SalonsService {
     // ✅ Add new salon
@@ -192,8 +193,32 @@ class SalonsService {
                 type: 'gallery'
             })
         } catch (error) {
-            console.error('Toggle Salon Status Error:', err.message);
             throw new Error('Failed to update salon status');
+        }
+    }
+
+    static async generateQRCode(salonId) {
+        try {
+            const salon = await db('salons').where({ id: salonId }).first();
+            if (!salon) {
+                throw new Error('Salon not found');
+            }
+
+            // Generate QR code for the salon ID or a specific URL
+            // For now, we'll encode a JSON object with salon details or a deep link
+            // Adjust this content based on frontend requirements
+            const qrData = JSON.stringify({
+                type: 'salon',
+                id: salon.id,
+                name: salon.name
+            });
+
+            // Return Data URI
+            const qrCodeUrl = await QRCode.toDataURL(qrData);
+            return qrCodeUrl;
+        } catch (err) {
+            console.error('Generate QR Code Error:', err.message);
+            throw new Error('Failed to generate QR code');
         }
     }
 }

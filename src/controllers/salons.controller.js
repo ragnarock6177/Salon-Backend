@@ -89,6 +89,18 @@ const SalonsController = {
     } catch (error) {
       return sendError(res, error.message, 400);
     }
+  },
+
+  // ✅ Generate QR Code
+  async generateQRCode(req, res) {
+    try {
+      const salonId = req.params.id;
+      const qrCodeUrl = await SalonsService.generateQRCode(salonId);
+      console.log("qrCodeUrl", qrCodeUrl)
+      return sendSuccess(res, 'QR Code generated successfully', { qrCodeUrl }, 200);
+    } catch (error) {
+      return sendError(res, error.message, 400);
+    }
   }
 };
 
