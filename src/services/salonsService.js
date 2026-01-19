@@ -16,7 +16,9 @@ class SalonsService {
                 rating,
                 city_id,
                 is_active = true,
-                total_reviews = 10
+                total_reviews = 10,
+                opening_time,
+                closing_time
             } = salonData;
 
             console.log("---", salonData)
@@ -32,7 +34,9 @@ class SalonsService {
                 rating,
                 city_id,
                 total_reviews,
-                is_active
+                is_active,
+                opening_time,
+                closing_time
             });
 
             // Insert images if provided
