@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes.js';
 import cityRoutes from './routes/city.routes.js';
 import salonsRoutes from './routes/salons.route.js';
 import uploadRoutes from "./routes/upload.routes.js";
+import vercelUploadRoutes from "./routes/vercelUploadRoutes.js";
 import couponRoutes from './routes/coupon.routes.js';
 import salonMembershipsRoutes from "./routes/salon_memberships.routes.js";
 import customerMembershipRoutes from "./routes/customer_memberships.routes.js";
@@ -79,6 +80,7 @@ app.use('/api/admin/city', cityRoutes);
 app.use('/api/admin/salons', salonsRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/admin/upload", express.static("uploads"), uploadRoutes);
+app.use("/api/upload", vercelUploadRoutes);
 
 app.use("/api/admin/coupons", couponRoutes);
 app.use("/api/memberships", salonMembershipsRoutes);
