@@ -1,4 +1,17 @@
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
+
+/**
+ * Deletes an image file from Vercel Blob storage.
+ * @param {string} url - The URL of the file to delete.
+ * @returns {Promise<void>}
+ */
+export const deleteImageFromBlob = async (url) => {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error("BLOB_READ_WRITE_TOKEN is not defined in environment variables.");
+    }
+
+    await del(url);
+};
 
 /**
  * Uploads an image file to Vercel Blob storage.

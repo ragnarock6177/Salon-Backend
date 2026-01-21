@@ -201,6 +201,22 @@ class SalonsService {
         }
     }
 
+    static async deleteImage(salon_id, imageUrl) {
+        try {
+            const deleted = await db('salon_images')
+                .where({ salon_id: salon_id, image_url: imageUrl })
+                .del();
+
+            if (deleted === 0) {
+                throw new Error('Image not found or already deleted');
+            }
+            return { message: 'Image deleted successfully' };
+        } catch (error) {
+            console.error('Delete Image Error:', error.message);
+            throw new Error('Failed to delete image');
+        }
+    }
+
     static async generateQRCode(salonId) {
         try {
             const salon = await db('salons').where({ id: salonId }).first();

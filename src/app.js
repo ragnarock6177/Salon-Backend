@@ -68,7 +68,7 @@ app.use((req, res, next) => {
   res.once('finish', () => {
     const delta = Date.now() - start;
     // minimal console tracing; replace with structured logger later
-    console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${delta}ms`);
+    // console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${delta}ms`);
   });
   next();
 });
@@ -79,8 +79,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin/city', cityRoutes);
 app.use('/api/admin/salons', salonsRoutes);
 app.use("/uploads", express.static("uploads"));
-app.use("/api/admin/upload", express.static("uploads"), uploadRoutes);
-app.use("/api/upload", vercelUploadRoutes);
+// app.use("/api/admin/upload", express.static("uploads"), uploadRoutes);
+app.use("/api/admin/upload", vercelUploadRoutes);
 
 app.use("/api/admin/coupons", couponRoutes);
 app.use("/api/memberships", salonMembershipsRoutes);

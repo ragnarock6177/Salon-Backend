@@ -1,4 +1,4 @@
-import { uploadImageToBlob } from '../services/vercelBlobService.js';
+import { uploadImageToBlob, deleteImageFromBlob } from '../services/vercelBlobService.js';
 import SalonsService from '../services/salonsService.js';
 
 // Generic simple upload (kept for backward compatibility or simple use)
@@ -19,19 +19,20 @@ export const uploadImage = async (req, res) => {
 
 export const uploadSingleImage = async (req, res) => {
     try {
-        const { salon_id, salonName } = req.body;
+        const { salon_id, salon_name } = req.body;
+        console.log(req.body);
 
         if (!salon_id) {
             return res.status(400).json({ error: "Salon ID is required" });
         }
-        if (!salonName) {
+        if (!salon_name) {
             return res.status(400).json({ error: "Salon Name is required" });
         }
         if (!req.file) {
             return res.status(400).json({ error: "No file uploaded" });
         }
 
-        const sanitizedSalonName = salonName.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const sanitizedSalonName = salon_name.replace(/[^a-zA-Z0-9_-]/g, "_");
         const pathPrefix = `salons/${sanitizedSalonName}`;
 
         // Add unique timestamp to filename to prevent collisions since Vercel Blob overwrites by default on same path
@@ -55,19 +56,19 @@ export const uploadSingleImage = async (req, res) => {
 
 export const uploadMultipleImages = async (req, res) => {
     try {
-        const { salon_id, salonName } = req.body;
+        const { salon_id, salon_name } = req.body;
 
         if (!salon_id) {
             return res.status(400).json({ error: "Salon ID is required" });
         }
-        if (!salonName) {
+        if (!salon_name) {
             return res.status(400).json({ error: "Salon Name is required" });
         }
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ error: "No files uploaded" });
         }
 
-        const sanitizedSalonName = salonName.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const sanitizedSalonName = salon_name.replace(/[^a-zA-Z0-9_-]/g, "_");
         const pathPrefix = `salons/${sanitizedSalonName}`;
 
         const uploadPromises = req.files.map(async (file) => {
@@ -91,5 +92,38 @@ export const uploadMultipleImages = async (req, res) => {
     } catch (error) {
         console.error('Error uploading multiple images:', error);
         res.status(500).json({ success: false, message: 'Failed to upload images' });
+    }
+};
+
+export const deleteImage = async (req, res) => {
+    try {
+        const { salon_id, image_url } = req.body;
+
+        if (!salon_id) {
+            return res.status(400).json({ error: "Salon ID is required" });
+        }
+        if (!image_url) {
+            return res.status(400).json({ error: "Image URL is required" });
+        }
+
+        // 1. Delete from Vercel Blob
+        try {
+            await deleteImageFromBlob(image_url);
+        } catch (blobError) {
+            console.error('Vercel Blob delete warning:', blobError);
+            // Continue to delete from DB even if blob delete fails (e.g. already deleted manually)
+        }
+
+        // 2. Delete from Database
+        await SalonsService.deleteImage(salon_id, image_url);
+
+        res.status(200).json({
+            success: true,
+            message: "Image deleted successfully"
+        });
+
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        res.status(500).json({ success: false, message: error.message || 'Failed to delete image' });
     }
 };
