@@ -189,9 +189,9 @@ export const CouponService = {
                 .count('id as total')
                 .first();
 
-            if (parseInt(count.total, 10) >= coupon.max_usage) {
-                throw new Error('Coupon global usage limit reached');
-            }
+            // if (parseInt(count.total, 10) >= coupon.max_usage) {
+            //     throw new Error('Coupon global usage limit reached');
+            // }
 
             // 6. Mark purchased coupon as used
             await trx('customer_coupons')
