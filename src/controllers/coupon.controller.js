@@ -49,5 +49,39 @@ export const CouponController = {
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });
     }
+  },
+
+  async buyCoupon(req, res) {
+    try {
+      const { salonId, couponId } = req.params;
+      const { customerId } = req.body;
+
+      const result = await CouponService.buyCoupon(customerId, salonId, couponId);
+      res.status(201).json({ success: true, data: result });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
+
+  async purchaseCoupons(req, res) {
+    try {
+      const { salonId } = req.params;
+      const { customerId, items } = req.body;
+
+      const result = await CouponService.purchaseCoupons(customerId, salonId, items);
+      res.status(201).json({ success: true, data: result });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
+
+  async getCustomerPurchasedCoupons(req, res) {
+    try {
+      const { customerId } = req.params;
+      const result = await CouponService.getCustomerPurchasedCoupons(customerId);
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
   }
 };
