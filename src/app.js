@@ -13,6 +13,8 @@ import vercelUploadRoutes from "./routes/vercelUploadRoutes.js";
 import couponRoutes from './routes/coupon.routes.js';
 import salonMembershipsRoutes from "./routes/salon_memberships.routes.js";
 import customerMembershipRoutes from "./routes/customer_memberships.routes.js";
+import reviewRoutes from "./routes/review.routes.js";
+import adminReviewRoutes from "./routes/admin.review.routes.js";
 import { authMiddleware } from './middelwares/auth.middleware.js';
 import './config/firebase.js';
 
@@ -85,6 +87,10 @@ app.use("/api/admin/upload", vercelUploadRoutes);
 app.use("/api/admin/coupons", couponRoutes);
 app.use("/api/memberships", salonMembershipsRoutes);
 app.use("/api/customer-memberships", authMiddleware, customerMembershipRoutes);
+
+// Review routes
+app.use("/api/admin/reviews", reviewRoutes);
+// app.use("/api/admin/reviews", adminReviewRoutes);
 
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
 app.get('/health', (req, res) => res.sendStatus(204));
