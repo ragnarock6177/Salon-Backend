@@ -21,8 +21,6 @@ class SalonsService {
                 closing_time
             } = salonData;
 
-            console.log("---", salonData)
-
             // Insert salon
             const [salonId] = await db('salons').insert({
                 name,
@@ -124,15 +122,15 @@ class SalonsService {
             const salon = await db('salons').where({ id: salonId }).first();
             if (!salon) return null;
 
-            // Fetch images
-            const images = await db('salon_images')
-                .where({ salon_id: salonId })
-                .select('image_url', 'is_primary', 'type');
+            // Fetch images and coupons in parallel
+            const [images, coupons] = await Promise.all([
+                db('salon_images')
+                    .where({ salon_id: salonId })
+                    .select('image_url', 'is_primary', 'type'),
+                CouponService.getCouponsBySalon(salonId)
+            ]);
 
             salon.images = images;
-
-            // Fetch coupons
-            const coupons = await CouponService.getCouponsBySalon(salonId);
             salon.coupons = coupons;
 
             return salon;

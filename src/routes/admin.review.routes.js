@@ -6,8 +6,8 @@ import { adminMiddleware } from '../middelwares/admin.middleware.js';
 const router = express.Router();
 
 // All admin routes require authentication and admin role
-// router.use(authMiddleware);
-// router.use(adminMiddleware);
+router.use(authMiddleware);
+router.use(adminMiddleware);
 
 // ==================== ADMIN REVIEW MANAGEMENT ====================
 

@@ -5,35 +5,39 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
+
+// Config
+import './config/firebase.js';
+
+// Routes
 import authRoutes from './routes/auth.routes.js';
 import cityRoutes from './routes/city.routes.js';
 import salonsRoutes from './routes/salons.route.js';
-import uploadRoutes from "./routes/upload.routes.js";
 import vercelUploadRoutes from "./routes/vercelUploadRoutes.js";
 import couponRoutes from './routes/coupon.routes.js';
-import salonMembershipsRoutes from "./routes/salon_memberships.routes.js";
-import customerMembershipRoutes from "./routes/customer_memberships.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import adminReviewRoutes from "./routes/admin.review.routes.js";
 import { authMiddleware } from './middelwares/auth.middleware.js';
-import './config/firebase.js';
 
+// Load environmental variables
 dotenv.config();
 
 const app = express();
 
+// --- Configuration ----------------------------------------------------------
+
+// Logging
 if (process.env.NODE_ENV !== 'test') {
-  // use morgan 'combined' in production, 'dev' in development
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
+// CORS
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:4200')
   .split(',')
   .map(s => s.trim());
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     return callback(new Error('CORS policy: origin not allowed'));
@@ -41,60 +45,46 @@ app.use(cors({
   credentials: true,
   optionsSuccessStatus: 204,
   exposedHeaders: ['Content-Length', 'X-Request-Id']
-}));
+};
+app.use(cors(corsOptions));
 
-// Middleware
-// app.use(cors({
-//     origin: process.env.CLIENT_URL || 'http://localhost:4200',
-//     credentials: true
-// }));
-
-// --- Performance middlewares ------------------------------------------------
+// Security & Performance
 app.use(compression());
 
 const apiLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
   max: Number(process.env.RATE_LIMIT_MAX) || 200,                       // limit each IP
-  standardHeaders: true,   // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false,    // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-
 app.use('/api/', apiLimiter);
 
+// Parsing
 app.use(express.json());
 app.use(cookieParser());
 
+// Custom Middleware: Request ID
 app.use((req, res, next) => {
-  const start = Date.now();
   res.setHeader('X-Request-Id', req.headers['x-request-id'] || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
-  res.once('finish', () => {
-    const delta = Date.now() - start;
-    // minimal console tracing; replace with structured logger later
-    // console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${delta}ms`);
-  });
   next();
 });
 
-// Routes
+// ============================================================================
+// ROUTES
+// ============================================================================
+
+// Public API
+app.get('/', (_, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
+app.get('/health', (_, res) => res.sendStatus(204));
 
 app.use('/api/auth', authRoutes);
+app.use("/api/reviews", reviewRoutes);
+
+// Admin API
 app.use('/api/admin/city', cityRoutes);
 app.use('/api/admin/salons', salonsRoutes);
-app.use("/uploads", express.static("uploads"));
-// app.use("/api/admin/upload", express.static("uploads"), uploadRoutes);
 app.use("/api/admin/upload", vercelUploadRoutes);
-
 app.use("/api/admin/coupons", couponRoutes);
-app.use("/api/memberships", salonMembershipsRoutes);
-app.use("/api/customer-memberships", authMiddleware, customerMembershipRoutes);
-
-// Review routes
-app.use("/api/admin/reviews", reviewRoutes);
-// app.use("/api/admin/reviews", adminReviewRoutes);
-
-app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
-app.get('/health', (req, res) => res.sendStatus(204));
-
-// Serve static files from uploads folder
+app.use("/api/admin/reviews", adminReviewRoutes);
 
 export default app;

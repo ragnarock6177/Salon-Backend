@@ -83,11 +83,7 @@ class CityService {
     // ✅ Get all cities
     static async getCities() {
         try {
-            console.log("==============", db.client.pool)
-            let query = db('cities').select('id', 'name', 'is_active');
-            // console.log(query)
-            // query = query.where({ is_active: true });
-            const cities = await query;
+            const cities = await db('cities').select('id', 'name', 'is_active');
             return cities;
         } catch (err) {
             console.error('Get Cities Error:', err.message);

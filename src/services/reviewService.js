@@ -172,21 +172,20 @@ class ReviewService {
 
             if (!review) return null;
 
-            // Fetch images
-            const images = await db('review_images')
-                .where({ review_id: reviewId })
-                .orderBy('display_order', 'asc')
-                .select('id', 'image_url', 'display_order');
+            // Fetch images and owner response in parallel
+            const [images, response] = await Promise.all([
+                db('review_images')
+                    .where({ review_id: reviewId })
+                    .orderBy('display_order', 'asc')
+                    .select('id', 'image_url', 'display_order'),
+                db('review_responses as rr')
+                    .select('rr.*', 'u.name as responder_name')
+                    .leftJoin('users as u', 'rr.responder_id', 'u.id')
+                    .where('rr.review_id', reviewId)
+                    .first()
+            ]);
 
             review.images = images;
-
-            // Fetch owner response if any
-            const response = await db('review_responses as rr')
-                .select('rr.*', 'u.name as responder_name')
-                .leftJoin('users as u', 'rr.responder_id', 'u.id')
-                .where('rr.review_id', reviewId)
-                .first();
-
             review.owner_response = response || null;
 
             return review;
@@ -229,41 +228,40 @@ class ReviewService {
                 query = query.where('r.rating', rating);
             }
 
-            // Get total count for pagination
-            const countQuery = query.clone();
-            const [{ count }] = await countQuery.count('* as count');
-            const total = parseInt(count);
-
-            // Apply sorting and pagination
             const validSortColumns = ['created_at', 'rating', 'likes_count'];
             const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'created_at';
             const order = sortOrder.toLowerCase() === 'asc' ? 'asc' : 'desc';
 
-            const reviews = await query
-                .orderBy(`r.${sortColumn}`, order)
-                .limit(limit)
-                .offset(offset);
+            // Run COUNT and paginated SELECT in parallel
+            const [countResult, reviews] = await Promise.all([
+                query.clone().count('* as count').first(),
+                query.clone()
+                    .orderBy(`r.${sortColumn}`, order)
+                    .limit(limit)
+                    .offset(offset)
+            ]);
 
-            // Fetch images for all reviews
+            const total = parseInt(countResult.count);
+
+            // Fetch images, responses, and user likes in parallel
             const reviewIds = reviews.map(r => r.id);
-            const images = await db('review_images')
-                .whereIn('review_id', reviewIds)
-                .orderBy('display_order', 'asc');
 
-            // Fetch owner responses
-            const responses = await db('review_responses as rr')
-                .select('rr.*', 'u.name as responder_name')
-                .leftJoin('users as u', 'rr.responder_id', 'u.id')
-                .whereIn('rr.review_id', reviewIds);
-
-            // Check if user has liked reviews
-            let userLikes = [];
-            if (userId) {
-                userLikes = await db('review_likes')
+            const [images, responses, userLikes] = await Promise.all([
+                db('review_images')
                     .whereIn('review_id', reviewIds)
-                    .where('user_id', userId)
-                    .select('review_id');
-            }
+                    .orderBy('display_order', 'asc'),
+                db('review_responses as rr')
+                    .select('rr.*', 'u.name as responder_name')
+                    .leftJoin('users as u', 'rr.responder_id', 'u.id')
+                    .whereIn('rr.review_id', reviewIds),
+                userId
+                    ? db('review_likes')
+                        .whereIn('review_id', reviewIds)
+                        .where('user_id', userId)
+                        .select('review_id')
+                    : Promise.resolve([])
+            ]);
+
             const likedReviewIds = new Set(userLikes.map(l => l.review_id));
 
             // Map images and responses to reviews
@@ -672,40 +670,41 @@ class ReviewService {
                 throw new Error('Salon not found');
             }
 
-            // Get aggregate stats
-            const stats = await db('salon_reviews')
-                .where({ salon_id: salonId, status: 'approved' })
-                .select(
-                    db.raw('COUNT(*) as total_reviews'),
-                    db.raw('COALESCE(AVG(rating), 0) as average_rating'),
-                    db.raw('SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_star'),
-                    db.raw('SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_star'),
-                    db.raw('SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_star'),
-                    db.raw('SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_star'),
-                    db.raw('SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star'),
-                    db.raw('SUM(CASE WHEN is_verified_visit = true THEN 1 ELSE 0 END) as verified_reviews')
-                )
-                .first();
-
-            // Count reviews with images
-            const imageStats = await db('salon_reviews as r')
-                .join('review_images as ri', 'r.id', 'ri.review_id')
-                .where({ 'r.salon_id': salonId, 'r.status': 'approved' })
-                .countDistinct('r.id as reviews_with_images')
-                .first();
-
-            // Get recent reviews (last 30 days)
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-            const recentStats = await db('salon_reviews')
-                .where({ salon_id: salonId, status: 'approved' })
-                .where('created_at', '>=', thirtyDaysAgo)
-                .select(
-                    db.raw('COUNT(*) as recent_reviews'),
-                    db.raw('COALESCE(AVG(rating), 0) as recent_average')
-                )
-                .first();
+            // Run all 3 stat queries in parallel
+            const [stats, imageStats, recentStats] = await Promise.all([
+                // Aggregate stats
+                db('salon_reviews')
+                    .where({ salon_id: salonId, status: 'approved' })
+                    .select(
+                        db.raw('COUNT(*) as total_reviews'),
+                        db.raw('COALESCE(AVG(rating), 0) as average_rating'),
+                        db.raw('SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as five_star'),
+                        db.raw('SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as four_star'),
+                        db.raw('SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as three_star'),
+                        db.raw('SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as two_star'),
+                        db.raw('SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as one_star'),
+                        db.raw('SUM(CASE WHEN is_verified_visit = true THEN 1 ELSE 0 END) as verified_reviews')
+                    )
+                    .first(),
+                // Count reviews with images
+                db('salon_reviews as r')
+                    .join('review_images as ri', 'r.id', 'ri.review_id')
+                    .where({ 'r.salon_id': salonId, 'r.status': 'approved' })
+                    .countDistinct('r.id as reviews_with_images')
+                    .first(),
+                // Recent stats (last 30 days)
+                db('salon_reviews')
+                    .where({ salon_id: salonId, status: 'approved' })
+                    .where('created_at', '>=', thirtyDaysAgo)
+                    .select(
+                        db.raw('COUNT(*) as recent_reviews'),
+                        db.raw('COALESCE(AVG(rating), 0) as recent_average')
+                    )
+                    .first()
+            ]);
 
             const totalReviews = parseInt(stats.total_reviews) || 0;
 

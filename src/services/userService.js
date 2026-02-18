@@ -107,7 +107,7 @@ class UserService {
 
   static async getAllUsers() {
     try {
-      const users = await db('users').select('id', 'name', 'email');
+      const users = await db('users').select('id', 'name', 'email', 'phone', 'firebase_uid', 'auth_provider', 'role', 'created_at', 'updated_at');
       return users;
     } catch (err) {
       console.error('Get All Users Error:', err.message);

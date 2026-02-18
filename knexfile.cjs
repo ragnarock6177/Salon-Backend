@@ -8,9 +8,10 @@ dotenv.config({ path: path.resolve(process.cwd(), env) });
 const shared = {
     client: 'mysql2',
     pool: {
-        min: 0,
-        max: 5,                // reduce if server can't handle many connections
+        min: 2,                // pre-warm connections to avoid cold-start latency
+        max: 10,               // allow more concurrent queries
         acquireTimeoutMillis: 10000, // how long to wait for a free connection
+        createTimeoutMillis: 5000,   // fail fast if DB is unreachable
         idleTimeoutMillis: 30000
     },
     migrations: {

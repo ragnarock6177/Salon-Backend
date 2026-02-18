@@ -1,5 +1,5 @@
 import db from '../config/db.js';
-import { MembershipService } from '../services/salonMemberships.js';
+
 
 export const CouponService = {
 
@@ -29,23 +29,7 @@ export const CouponService = {
         return db('coupons').where({ salon_id: salonId, code: couponCode }).first();
     },
 
-    /**
-     * Get all coupons available to a customer based on membership
-     */
-    async getCouponsForCustomer(customerId, salonId) {
-        const membership = await MembershipService.hasActiveMembership(customerId, salonId);
-        if (!membership) {
-            throw new Error('Customer does not have an active membership for this salon');
-        }
 
-        // Return all active coupons of the salon
-        return db('coupons')
-            .where({
-                salon_id: salonId,
-                status: 'active'
-            })
-            .select('*');
-    },
 
     /**
      * Buy a coupon
@@ -53,10 +37,6 @@ export const CouponService = {
     async buyCoupon(customerId, salonId, couponId) {
         const trx = await db.transaction();
         try {
-            // 1. Verify membership
-            const membership = await MembershipService.hasActiveMembership(customerId, salonId);
-            if (!membership) throw new Error('No active membership for this salon');
-
             // 2. Get coupon
             const coupon = await trx('coupons').where({ id: couponId, salon_id: salonId }).first();
             if (!coupon) throw new Error('Coupon not found');
@@ -88,7 +68,6 @@ export const CouponService = {
      * Purchase multiple coupons
      */
     async purchaseCoupons(customerId, salonId, items) {
-        console.log(customerId, salonId, items)
         const trx = await db.transaction();
         try {
             // 1. Verify membership
@@ -152,7 +131,6 @@ export const CouponService = {
      * Redeem a coupon
      */
     async redeemCoupon({ customerId, salonId, couponCode }) {
-        console.log(customerId, salonId, couponCode)
         const trx = await db.transaction();
 
         try {

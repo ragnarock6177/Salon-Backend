@@ -7,7 +7,6 @@ const SalonsController = {
     try {
       const salonData = req.body;
       const images = req.body.images || []; // expecting array of image URLs
-      console.log(req.body)
       const newSalon = await SalonsService.addSalon(salonData, images);
       return sendSuccess(res, 'Salon added successfully', newSalon, 201);
     } catch (error) {
@@ -96,7 +95,6 @@ const SalonsController = {
     try {
       const salonId = req.params.id;
       const qrCodeUrl = await SalonsService.generateQRCode(salonId);
-      console.log("qrCodeUrl", qrCodeUrl)
       return sendSuccess(res, 'QR Code generated successfully', { qrCodeUrl }, 200);
     } catch (error) {
       return sendError(res, error.message, 400);
