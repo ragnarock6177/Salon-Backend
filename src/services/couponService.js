@@ -29,6 +29,36 @@ export const CouponService = {
         return db('coupons').where({ salon_id: salonId, code: couponCode }).first();
     },
 
+    /**
+     * Update a coupon
+     */
+    async updateCoupon(salonId, couponId, data) {
+        const updated = await db('coupons')
+            .where({ id: couponId, salon_id: salonId })
+            .update(data);
+
+        if (!updated) {
+            throw new Error('Coupon not found or update failed');
+        }
+
+        return db('coupons').where({ id: couponId }).first();
+    },
+
+    /**
+     * Delete a coupon
+     */
+    async deleteCoupon(salonId, couponId) {
+        const deleted = await db('coupons')
+            .where({ id: couponId, salon_id: salonId })
+            .del();
+
+        if (!deleted) {
+            throw new Error('Coupon not found or delete failed');
+        }
+
+        return { message: 'Coupon deleted successfully' };
+    },
+
 
 
     /**
@@ -40,7 +70,7 @@ export const CouponService = {
             // 2. Get coupon
             const coupon = await trx('coupons').where({ id: couponId, salon_id: salonId }).first();
             if (!coupon) throw new Error('Coupon not found');
-
+            console.log(coupon);
             // 3. Validate status and dates
             if (coupon.status !== 'active') throw new Error('Coupon is inactive');
             const now = new Date();

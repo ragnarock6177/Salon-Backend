@@ -15,6 +15,32 @@ export const CouponController = {
   },
 
   /**
+   * Update coupon
+   */
+  async updateCoupon(req, res) {
+    try {
+      const { salonId, couponId } = req.params;
+      const updatedCoupon = await CouponService.updateCoupon(salonId, couponId, req.body);
+      res.json({ success: true, data: updatedCoupon });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
+
+  /**
+   * Delete coupon
+   */
+  async deleteCoupon(req, res) {
+    try {
+      const { salonId, couponId } = req.params;
+      await CouponService.deleteCoupon(salonId, couponId);
+      res.json({ success: true, message: 'Coupon deleted successfully' });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message });
+    }
+  },
+
+  /**
    * Get all coupons for a salon
    */
   async getCouponsBySalon(req, res) {

@@ -18,11 +18,15 @@ import couponRoutes from './routes/coupon.routes.js';
 import reviewRoutes from "./routes/review.routes.js";
 import adminReviewRoutes from "./routes/admin.review.routes.js";
 import { authMiddleware } from './middelwares/auth.middleware.js';
+import { startCouponCleanupJob } from './jobs/couponCleanup.job.js';
 
 // Load environmental variables
 dotenv.config();
 
 const app = express();
+
+// ── Start background jobs ────────────────────────────────────────────────────
+startCouponCleanupJob();
 
 // --- Configuration ----------------------------------------------------------
 

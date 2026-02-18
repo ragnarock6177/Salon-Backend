@@ -9,6 +9,12 @@ router.get('/customer/:customerId', CouponController.getCustomerPurchasedCoupons
 // Create coupon for a specific salon
 router.post('/:salonId', CouponController.createCoupon);
 
+// Update coupon for a specific salon
+router.put('/:salonId/:couponId', CouponController.updateCoupon);
+
+// Delete coupon for a specific salon
+router.delete('/:salonId/:couponId', CouponController.deleteCoupon);
+
 // Get all coupons for a specific salon
 router.get('/:salonId', CouponController.getCouponsBySalon);
 
